@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"sync"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type ServerConfig struct {
