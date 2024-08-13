@@ -52,6 +52,54 @@
                     }
                 }
             }
+        },
+        "/v1/token/refresh": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "token"
+                ],
+                "summary": "Updates token with provided refresh token",
+                "parameters": [
+                    {
+                        "description": "Refreshed pair token-refresh",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.RefreshTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Received bad request",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.customError"
+                        }
+                    },
+                    "409": {
+                        "description": "Client trying to authorize with different IP address",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.customError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error occured",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.customError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -68,6 +116,32 @@
             }
         },
         "endpoint.GetTokenResponse": {
+            "type": "object",
+            "properties": {
+                "refresh": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh",
+                "token"
+            ],
+            "properties": {
+                "refresh": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.RefreshTokenResponse": {
             "type": "object",
             "properties": {
                 "refresh": {

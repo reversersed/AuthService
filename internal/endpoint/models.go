@@ -7,3 +7,11 @@ type GetTokenResponse struct {
 	Token   string `json:"token"`
 	Refresh string `json:"refresh"`
 }
+type RefreshTokenRequest struct {
+	Token   string `json:"token" validate:"required"`
+	Refresh string `json:"refresh" validate:"required"`
+}
+type RefreshTokenResponse struct {
+	Token   string `json:"token"`
+	Refresh string `json:"refresh"`
+}

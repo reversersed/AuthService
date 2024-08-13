@@ -26,6 +26,53 @@ func (e *endpoint) GetAccessToken(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+	var ip string
+	if ip = c.ClientIP(); len(ip) == 0 {
+		ip = c.RemoteIP()
+	}
 
-	c.JSON(http.StatusOK, GetTokenResponse{Token: request.Guid, Refresh: "321"})
+	token, refresh, err := e.service.GenerateAccessToken(request.Guid, ip)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, GetTokenResponse{Token: token, Refresh: refresh})
+}
+
+// @Summary Updates token with provided refresh token
+// @Tags token
+// @Produce json
+// @Param body body RefreshTokenRequest true "Refreshed pair token-refresh"
+// @Success 200 {object} RefreshTokenResponse
+// @Failure 400 {object} middleware.customError "Received bad request"
+// @Failure 409 {object} middleware.customError "Client trying to authorize with different IP address"
+// @Failure 500 {object} middleware.customError "Internal error occured"
+// @Router /v1/token/refresh [post]
+func (e *endpoint) RefreshToken(c *gin.Context) {
+	var request RefreshTokenRequest
+	if err := c.BindJSON(&request); err != nil {
+		c.Error(middleware.BadRequestError(err.Error()))
+		return
+	}
+
+	if err := e.validator.StructValidation(&request); err != nil {
+		c.Error(err)
+		return
+	}
+	var ip string
+	if ip = c.ClientIP(); len(ip) == 0 {
+		ip = c.RemoteIP()
+	}
+	claims, err := e.service.ValidateUserToken(request.Token, ip)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	token, refresh, err := e.service.GenerateAccessToken(claims.ID, claims.LastIP)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, RefreshTokenResponse{Token: token, Refresh: refresh})
 }

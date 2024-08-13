@@ -10,6 +10,7 @@ var (
 	ErrNotFound   = errors.New("not found")
 	ErrInternal   = errors.New("something wrong happened")
 	ErrBadRequest = errors.New("received bad request")
+	ErrConflict   = errors.New("conflict occured")
 )
 
 type customError struct {
@@ -48,5 +49,12 @@ func BadRequestError(message string, args ...any) *customError {
 		Message:    fmt.Sprintf(message, args...),
 		StatusCode: http.StatusNotFound,
 		Err:        ErrBadRequest,
+	}
+}
+func ConfictError(message string, args ...any) *customError {
+	return &customError{
+		Message:    fmt.Sprintf(message, args...),
+		StatusCode: http.StatusConflict,
+		Err:        ErrConflict,
 	}
 }

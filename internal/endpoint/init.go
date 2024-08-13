@@ -1,8 +1,13 @@
 package endpoint
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	Service "github.com/reversersed/AuthService/internal/service"
+)
 
 type service interface {
+	GenerateAccessToken(string, string) (string, string, error)
+	ValidateUserToken(string, string) (*Service.Claims, error)
 }
 type logger interface {
 	Info(...any)
@@ -30,7 +35,7 @@ func (e *endpoint) RegisterRoute(r *gin.RouterGroup) {
 	g := r.Group("/v1/token")
 	{
 		g.POST("", e.GetAccessToken)
-		g.POST("/refresh")
+		g.POST("/refresh", e.RefreshToken)
 	}
 	e.logger.Info("endpoint routes registered")
 }

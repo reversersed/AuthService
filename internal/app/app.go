@@ -8,6 +8,7 @@ import (
 	_ "github.com/reversersed/AuthService/docs"
 	"github.com/reversersed/AuthService/internal/config"
 	"github.com/reversersed/AuthService/internal/endpoint"
+	"github.com/reversersed/AuthService/internal/service"
 	"github.com/reversersed/AuthService/internal/validator"
 	"github.com/reversersed/AuthService/pkg/logging/logrus"
 	"github.com/reversersed/AuthService/pkg/middleware"
@@ -48,7 +49,7 @@ func New() (*app, error) {
 	}
 
 	app.log.Info("setting up gin router...")
-	gin.SetMode(app.cfg.Server.Environment)
+	gin.SetMode(app.cfg.Environment)
 	app.router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"GET", "POST", "PATCH", "DELETE"},
@@ -58,8 +59,14 @@ func New() (*app, error) {
 	app.router.Use(middleware.ErrorHandler)
 	app.log.Info("router has been set up")
 
+	app.log.Info("setting up service...")
+	service, err := service.New(app.log, nil, app.cfg.SecretKey)
+	if err != nil {
+		return nil, err
+	}
+
 	app.log.Info("setting up endpoint...")
-	app.handlers = append(app.handlers, endpoint.New(nil, app.log, validator.New()))
+	app.handlers = append(app.handlers, endpoint.New(service, app.log, validator.New()))
 	app.log.Info("endpoint set up")
 	return app, nil
 }
@@ -69,12 +76,12 @@ func (a *app) Run() error {
 	for _, h := range a.handlers {
 		h.RegisterRoute(generalRouter)
 	}
-	if a.cfg.Server.Environment == "debug" {
+	if a.cfg.Environment == "debug" {
 		a.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 	go shutdown.Graceful(a)
 
-	if err := a.router.Run(fmt.Sprintf("%s:%d", a.cfg.Server.Url, a.cfg.Server.Port)); err != nil {
+	if err := a.router.Run(fmt.Sprintf("%s:%d", a.cfg.Url, a.cfg.Port)); err != nil {
 		return err
 	}
 	return nil
