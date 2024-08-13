@@ -1,11 +1,19 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/reversersed/AuthService/docs"
 	"github.com/reversersed/AuthService/internal/config"
+	"github.com/reversersed/AuthService/internal/endpoint"
+	"github.com/reversersed/AuthService/internal/validator"
 	"github.com/reversersed/AuthService/pkg/logging/logrus"
+	"github.com/reversersed/AuthService/pkg/middleware"
 	"github.com/reversersed/AuthService/pkg/shutdown"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title API
@@ -26,6 +34,7 @@ func New() (*app, error) {
 		return nil, err
 	}
 
+	logger.Info("setting up config...")
 	cfg, err := config.Load()
 	if err != nil {
 		logger.Error(err)
@@ -45,9 +54,13 @@ func New() (*app, error) {
 		AllowMethods:    []string{"GET", "POST", "PATCH", "DELETE"},
 	}))
 	app.router.RemoteIPHeaders = []string{"x-forwarded-for", "X-Forwarded-For", "X-FORWARDED-FOR"}
-	app.router.Use(gin.LoggerWithWriter(logger.Writer()))
-	//app.router.Use(middleware.ErrorHandler)
+	app.router.Use(gin.LoggerWithWriter(app.log.Writer()))
+	app.router.Use(middleware.ErrorHandler)
 	app.log.Info("router has been set up")
+
+	app.log.Info("setting up endpoint...")
+	app.handlers = append(app.handlers, endpoint.New(nil, app.log, validator.New()))
+	app.log.Info("endpoint set up")
 	return app, nil
 }
 func (a *app) Run() error {
@@ -56,8 +69,14 @@ func (a *app) Run() error {
 	for _, h := range a.handlers {
 		h.RegisterRoute(generalRouter)
 	}
-
+	if a.cfg.Server.Environment == "debug" {
+		a.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 	go shutdown.Graceful(a)
+
+	if err := a.router.Run(fmt.Sprintf("%s:%d", a.cfg.Server.Url, a.cfg.Server.Port)); err != nil {
+		return err
+	}
 	return nil
 }
 func (a *app) Close() error {

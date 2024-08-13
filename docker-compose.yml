@@ -1,0 +1,12 @@
+services:
+  service:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+    container_name: service
+    image: service
+    ports:
+      - 9000:9000

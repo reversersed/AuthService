@@ -1,0 +1,63 @@
+basePath: /api/
+consumes:
+- application/json
+definitions:
+  endpoint.GetTokenRequest:
+    properties:
+      guid:
+        example: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+        type: string
+    required:
+    - guid
+    type: object
+  endpoint.GetTokenResponse:
+    properties:
+      refresh:
+        type: string
+      token:
+        type: string
+    type: object
+  middleware.customError:
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:9000
+info:
+  contact: {}
+  title: API
+  version: "1.0"
+paths:
+  /v1/token:
+    post:
+      parameters:
+      - description: Request with user's guid
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.GetTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.GetTokenResponse'
+        "400":
+          description: Received bad request
+          schema:
+            $ref: '#/definitions/middleware.customError'
+        "500":
+          description: Internal error occured
+          schema:
+            $ref: '#/definitions/middleware.customError'
+      summary: Get access token with provided GUID
+      tags:
+      - token
+securityDefinitions:
+  ApiKeyAuth:
+    in: Headers
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

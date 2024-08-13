@@ -1,0 +1,97 @@
+{
+    "consumes": [
+        "application/json"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "title": "API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:9000",
+    "basePath": "/api/",
+    "paths": {
+        "/v1/token": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "token"
+                ],
+                "summary": "Get access token with provided GUID",
+                "parameters": [
+                    {
+                        "description": "Request with user's guid",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.GetTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.GetTokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Received bad request",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.customError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error occured",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.customError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "endpoint.GetTokenRequest": {
+            "type": "object",
+            "required": [
+                "guid"
+            ],
+            "properties": {
+                "guid": {
+                    "type": "string",
+                    "example": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+                }
+            }
+        },
+        "endpoint.GetTokenResponse": {
+            "type": "object",
+            "properties": {
+                "refresh": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "middleware.customError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "Headers"
+        }
+    }
+}
