@@ -14,7 +14,7 @@ func ErrorHandler(c *gin.Context) {
 			err := e.Err.(*customError)
 			c.JSON(err.StatusCode, err)
 		} else {
-			c.JSON(http.StatusInternalServerError, e.Error())
+			c.JSON(http.StatusInternalServerError, InternalError(e.Error()))
 		}
 	}
 }

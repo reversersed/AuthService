@@ -5,6 +5,8 @@ import (
 	Service "github.com/reversersed/AuthService/internal/service"
 )
 
+//go:generate mockgen -source=init.go -destination=mocks/mock.go
+
 type service interface {
 	GenerateAccessToken(string, string) (string, string, error)
 	ValidateUserToken(string, string) (*Service.Claims, error)
