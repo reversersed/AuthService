@@ -45,7 +45,6 @@ func (e *endpoint) GetAccessToken(c *gin.Context) {
 // @Param body body RefreshTokenRequest true "Refreshed pair token-refresh"
 // @Success 200 {object} RefreshTokenResponse
 // @Failure 400 {object} middleware.customError "Received bad request"
-// @Failure 409 {object} middleware.customError "Client trying to authorize with different IP address"
 // @Failure 500 {object} middleware.customError "Internal error occured"
 // @Router /v1/token/refresh [post]
 func (e *endpoint) RefreshToken(c *gin.Context) {

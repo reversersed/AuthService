@@ -93,12 +93,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/middleware.customError"
                         }
                     },
-                    "409": {
-                        "description": "Client trying to authorize with different IP address",
-                        "schema": {
-                            "$ref": "#/definitions/middleware.customError"
-                        }
-                    },
                     "500": {
                         "description": "Internal error occured",
                         "schema": {

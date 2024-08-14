@@ -6,6 +6,7 @@ services:
     volumes:
       - ./config:/config
       - ./logs:/logs
+      - ./internal/smtp/templates:/templates
     container_name: service
     image: service
     ports:

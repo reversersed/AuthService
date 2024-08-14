@@ -46,8 +46,7 @@ func (s *service) ValidateUserToken(token string, ip string) (*Claims, error) {
 
 	if claims.LastIP != ip {
 		s.logger.Infof("client %s tried to refresh token with different ip: %s, but last ip was %s", claims.ID, ip, claims.LastIP)
-		//sent email via smtp host...
-		return nil, middleware.ConfictError("token's saved ip does not equal to user ip. sending verification email...")
+		s.emailService.SendEmailWarning(ip)
 	}
 	return &claims, nil
 }
