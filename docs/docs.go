@@ -93,6 +93,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/middleware.customError"
                         }
                     },
+                    "404": {
+                        "description": "Refresh token was incorrect or token not found",
+                        "schema": {
+                            "$ref": "#/definitions/middleware.customError"
+                        }
+                    },
                     "500": {
                         "description": "Internal error occured",
                         "schema": {

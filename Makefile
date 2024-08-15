@@ -17,6 +17,7 @@ run: gen test-verbose start
 i: install
 
 install:
+	@go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	@go install github.com/golang/mock/mockgen@latest
 	@go install github.com/swaggo/swag/cmd/swag@latest
 	@$(MAKE) clean
@@ -32,13 +33,13 @@ clean:
 	@go mod tidy
 
 start:
-	@docker compose up --build --timestamps --wait --wait-timeout 1800 --remove-orphans -d
+	@docker compose --env-file ./config/.env up --build --timestamps --wait --wait-timeout 1800 --remove-orphans -d
 
 stop:
-	@docker compose stop
+	@docker compose --env-file ./config/.env stop
 
 up:
-	@docker compose up --timestamps --wait --wait-timeout 1800 --remove-orphans -d
+	@docker compose --env-file ./config/.env up --timestamps --wait --wait-timeout 1800 --remove-orphans -d
 
 test-unit: test-folder-creation gen
 	@go test ./... -v -short

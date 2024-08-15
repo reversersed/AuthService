@@ -47,7 +47,7 @@ func InternalError(message string, args ...any) *customError {
 func BadRequestError(message string, args ...any) *customError {
 	return &customError{
 		Message:    fmt.Sprintf(message, args...),
-		StatusCode: http.StatusNotFound,
+		StatusCode: http.StatusBadRequest,
 		Err:        ErrBadRequest,
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/reversersed/AuthService/internal/smtp"
+	"github.com/reversersed/AuthService/pkg/postgres"
 )
 
 type ServerConfig struct {
@@ -15,8 +16,9 @@ type ServerConfig struct {
 	SecretKey   string `env:"JWT_SECRET_KEY" env-required:"true" env-description:"Secret key for JWT authentication"`
 }
 type Config struct {
-	Server *ServerConfig
-	Smtp   *smtp.SmtpConfig
+	Database *postgres.DatabaseConfig
+	Server   *ServerConfig
+	Smtp     *smtp.SmtpConfig
 }
 
 var cfg *Config
@@ -27,6 +29,7 @@ func Load() (*Config, error) {
 	once.Do(func() {
 		server := &ServerConfig{}
 		smtp := &smtp.SmtpConfig{}
+		database := &postgres.DatabaseConfig{}
 
 		if err := cleanenv.ReadConfig("config/.env", server); err != nil {
 			desc, _ := cleanenv.GetDescription(cfg, nil)
@@ -40,10 +43,17 @@ func Load() (*Config, error) {
 			e = fmt.Errorf("%v: %s", err, desc)
 			return
 		}
+		if err := cleanenv.ReadConfig("config/.env", database); err != nil {
+			desc, _ := cleanenv.GetDescription(cfg, nil)
+
+			e = fmt.Errorf("%v: %s", err, desc)
+			return
+		}
 
 		cfg = &Config{
-			Server: server,
-			Smtp:   smtp,
+			Server:   server,
+			Smtp:     smtp,
+			Database: database,
 		}
 	})
 	if e != nil {

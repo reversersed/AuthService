@@ -30,8 +30,9 @@ func (s *service) GenerateAccessToken(guid string, ip string) (string, string, e
 	s.logger.Info("generating refresh token...")
 	byteToken := make([]byte, 24)
 	rand.Read(byteToken)
+	refreshToken := base64.StdEncoding.EncodeToString(byteToken)
 
-	return token.String(), base64.StdEncoding.EncodeToString(byteToken), nil
+	return token.String(), refreshToken, nil
 }
 func (s *service) ValidateUserToken(token string, ip string) (*Claims, error) {
 	claimToken, err := jwt.ParseAndVerifyString(token, s.verifier)

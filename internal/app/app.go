@@ -13,6 +13,7 @@ import (
 	"github.com/reversersed/AuthService/internal/validator"
 	"github.com/reversersed/AuthService/pkg/logging/logrus"
 	"github.com/reversersed/AuthService/pkg/middleware"
+	"github.com/reversersed/AuthService/pkg/postgres"
 	"github.com/reversersed/AuthService/pkg/shutdown"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -60,6 +61,13 @@ func New() (*app, error) {
 	app.router.Use(middleware.ErrorHandler)
 	app.log.Info("router has been set up")
 
+	app.log.Info("setting up database connection pool...")
+	databasePool, err := postgres.NewConnectionPool(app.cfg.Database)
+	if err != nil {
+		return nil, err
+	}
+	app.dbPool = databasePool
+
 	app.log.Info("setting up smtp service...")
 	smtp := smtp.New(cfg.Smtp, app.log)
 
@@ -96,5 +104,6 @@ func (a *app) Close() error {
 			return err
 		}
 	}
+	a.dbPool.Close()
 	return nil
 }
