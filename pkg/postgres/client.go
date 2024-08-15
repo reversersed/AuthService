@@ -2,14 +2,21 @@ package postgres
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 )
 
+type logger interface {
+	Info(...any)
+}
 type DatabaseConfig struct {
 	Host     string `env:"POSTGRES_HOST" env-required:"true" env-description:"Postgres hosting address"`
 	Port     int    `env:"POSTGRES_PORT" env-required:"true" env-description:"Portgres hosting port"`
@@ -18,24 +25,45 @@ type DatabaseConfig struct {
 	Database string `env:"POSTGRES_DB" env-required:"true" env-description:"Database name"`
 }
 
-func NewConnectionPool(cfg *DatabaseConfig) (*pgxpool.Pool, error) {
+func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error) {
 	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
 	pool, err := pgxpool.New(context.Background(), connectionString)
 	if err != nil {
 		return nil, err
 	}
+	pool.Config().AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		byteToken := make([]byte, 24)
+		rand.Read(byteToken)
+		trace := base64.StdEncoding.EncodeToString(byteToken)
 
+		logger.Info("database establishing new connection... trace: ", trace)
+		<-c.PgConn().CleanupDone()
+		logger.Info("database connection cleaned up, trace: ", trace)
+		return nil
+	}
 	err = pool.Ping(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	migrate, err := migrate.New("file:///migrations", connectionString)
+
+	instance, err := postgres.WithInstance(stdlib.OpenDBFromPool(pool), &postgres.Config{DatabaseName: cfg.Database})
 	if err != nil {
 		return nil, err
 	}
+
+	migrate, err := migrate.NewWithDatabaseInstance("file:///migrations", cfg.Database, instance)
+	if err != nil {
+		return nil, err
+	}
+
 	err = migrate.Up()
 	if err != nil {
 		return nil, err
+	}
+
+	source, err := migrate.Close()
+	if source != nil || err != nil {
+		return nil, fmt.Errorf("source: %v, database: %v", source, err)
 	}
 	return pool, nil
 }

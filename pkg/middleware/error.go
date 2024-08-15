@@ -26,7 +26,7 @@ func (c customError) Error() string {
 	return fmt.Sprintf("%v: %s", c.Err, c.Message)
 }
 func IsCustomError(err error) bool {
-	e := &customError{}
+	e := new(customError)
 	return errors.As(err, &e)
 }
 

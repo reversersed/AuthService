@@ -10,6 +10,7 @@ import (
 	"github.com/reversersed/AuthService/internal/endpoint"
 	"github.com/reversersed/AuthService/internal/service"
 	"github.com/reversersed/AuthService/internal/smtp"
+	"github.com/reversersed/AuthService/internal/storage"
 	"github.com/reversersed/AuthService/internal/validator"
 	"github.com/reversersed/AuthService/pkg/logging/logrus"
 	"github.com/reversersed/AuthService/pkg/middleware"
@@ -62,17 +63,20 @@ func New() (*app, error) {
 	app.log.Info("router has been set up")
 
 	app.log.Info("setting up database connection pool...")
-	databasePool, err := postgres.NewConnectionPool(app.cfg.Database)
+	databasePool, err := postgres.NewConnectionPool(app.cfg.Database, app.log)
 	if err != nil {
 		return nil, err
 	}
 	app.dbPool = databasePool
 
+	app.log.Info("setting up storage...")
+	storage := storage.New(app.dbPool, app.log)
+
 	app.log.Info("setting up smtp service...")
 	smtp := smtp.New(cfg.Smtp, app.log)
 
 	app.log.Info("setting up service...")
-	service, err := service.New(app.log, nil, smtp, app.cfg.Server.SecretKey)
+	service, err := service.New(app.log, storage, smtp, app.cfg.Server.SecretKey)
 	if err != nil {
 		return nil, err
 	}
@@ -99,11 +103,13 @@ func (a *app) Run() error {
 	return nil
 }
 func (a *app) Close() error {
+	a.log.Info("closing endpoint...")
 	for _, h := range a.handlers {
 		if err := h.Close(); err != nil {
 			return err
 		}
 	}
+	a.log.Info("closing database connection pool...")
 	a.dbPool.Close()
 	return nil
 }

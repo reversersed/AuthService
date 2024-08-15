@@ -34,7 +34,7 @@ func TestMiddleware(t *testing.T) {
 
 			engine.ServeHTTP(w, r)
 			assert.Equal(t, v.ExceptedCode, w.Result().StatusCode)
-			var err *customError = &customError{}
+			err := new(customError)
 			json.NewDecoder(w.Result().Body).Decode(err)
 			assert.Equal(t, err.Message, v.ExceptedMessage)
 		})

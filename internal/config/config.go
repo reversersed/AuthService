@@ -27,9 +27,9 @@ var once sync.Once
 func Load() (*Config, error) {
 	var e error
 	once.Do(func() {
-		server := &ServerConfig{}
-		smtp := &smtp.SmtpConfig{}
-		database := &postgres.DatabaseConfig{}
+		server := new(ServerConfig)
+		smtp := new(smtp.SmtpConfig)
+		database := new(postgres.DatabaseConfig)
 
 		if err := cleanenv.ReadConfig("config/.env", server); err != nil {
 			desc, _ := cleanenv.GetDescription(cfg, nil)
