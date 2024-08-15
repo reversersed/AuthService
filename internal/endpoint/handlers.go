@@ -63,7 +63,7 @@ func (e *endpoint) RefreshToken(c *gin.Context) {
 	if ip = c.ClientIP(); len(ip) == 0 {
 		ip = c.RemoteIP()
 	}
-	claims, err := e.service.ValidateUserToken(request.Token, ip)
+	claims, err := e.service.ValidateUserToken(request.Token, request.Refresh, ip)
 	if err != nil {
 		c.Error(err)
 		return

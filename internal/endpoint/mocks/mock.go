@@ -51,18 +51,18 @@ func (mr *MockserviceMockRecorder) GenerateAccessToken(arg0, arg1 interface{}) *
 }
 
 // ValidateUserToken mocks base method.
-func (m *Mockservice) ValidateUserToken(arg0, arg1 string) (*service.Claims, error) {
+func (m *Mockservice) ValidateUserToken(arg0, arg1, arg2 string) (*service.Claims, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateUserToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "ValidateUserToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(*service.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateUserToken indicates an expected call of ValidateUserToken.
-func (mr *MockserviceMockRecorder) ValidateUserToken(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockserviceMockRecorder) ValidateUserToken(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateUserToken", reflect.TypeOf((*Mockservice)(nil).ValidateUserToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateUserToken", reflect.TypeOf((*Mockservice)(nil).ValidateUserToken), arg0, arg1, arg2)
 }
 
 // Mocklogger is a mock of logger interface.

@@ -24,26 +24,27 @@ type Config struct {
 var cfg *Config
 var once sync.Once
 
-func Load() (*Config, error) {
+func Load(envPath string) (*Config, error) {
+
 	var e error
 	once.Do(func() {
 		server := new(ServerConfig)
 		smtp := new(smtp.SmtpConfig)
 		database := new(postgres.DatabaseConfig)
 
-		if err := cleanenv.ReadConfig("config/.env", server); err != nil {
+		if err := cleanenv.ReadConfig(envPath, server); err != nil {
 			desc, _ := cleanenv.GetDescription(cfg, nil)
 
 			e = fmt.Errorf("%v: %s", err, desc)
 			return
 		}
-		if err := cleanenv.ReadConfig("config/.env", smtp); err != nil {
+		if err := cleanenv.ReadConfig(envPath, smtp); err != nil {
 			desc, _ := cleanenv.GetDescription(cfg, nil)
 
 			e = fmt.Errorf("%v: %s", err, desc)
 			return
 		}
-		if err := cleanenv.ReadConfig("config/.env", database); err != nil {
+		if err := cleanenv.ReadConfig(envPath, database); err != nil {
 			desc, _ := cleanenv.GetDescription(cfg, nil)
 
 			e = fmt.Errorf("%v: %s", err, desc)

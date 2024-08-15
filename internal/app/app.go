@@ -39,7 +39,7 @@ func New() (*app, error) {
 	}
 
 	logger.Info("setting up config...")
-	cfg, err := config.Load()
+	cfg, err := config.Load("./config/.env")
 	if err != nil {
 		logger.Error(err)
 		return nil, err

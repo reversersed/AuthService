@@ -1,15 +1,22 @@
 package service
 
 import (
+	"time"
+
 	"github.com/cristalhq/jwt/v3"
 )
 
+//go:generate mockgen -source=init.go -destination=mocks/service.go
+
 type logger interface {
 	Info(...any)
-	Warn(...any)
+	Warnf(string, ...any)
 	Infof(string, ...any)
 }
 type storage interface {
+	CreateNewRefreshPassword(string, []byte, time.Time) error
+	GetFreeRefreshToken(string, time.Time) (string, []byte, error)
+	RevokeRefreshToken(string) error
 }
 type emailService interface {
 	SendEmailWarning(ip string)

@@ -16,6 +16,7 @@ import (
 
 type logger interface {
 	Info(...any)
+	Infof(string, ...any)
 }
 type DatabaseConfig struct {
 	Host     string `env:"POSTGRES_HOST" env-required:"true" env-description:"Postgres hosting address"`
@@ -46,6 +47,7 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 		return nil, err
 	}
 
+	logger.Info("retrieving db from pool to migrate...")
 	instance, err := postgres.WithInstance(stdlib.OpenDBFromPool(pool), &postgres.Config{DatabaseName: cfg.Database})
 	if err != nil {
 		return nil, err
@@ -56,6 +58,7 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 		return nil, err
 	}
 
+	logger.Info("starting up migration...")
 	err = migrate.Up()
 	if err != nil {
 		return nil, err
@@ -65,5 +68,10 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 	if source != nil || err != nil {
 		return nil, fmt.Errorf("source: %v, database: %v", source, err)
 	}
+	version, dirty, err := migrate.Version()
+	if err != nil {
+		return nil, fmt.Errorf("no migrations were applied: %v", err)
+	}
+	logger.Infof("migrations done, current version: %d, database dirty: %v", version, dirty)
 	return pool, nil
 }

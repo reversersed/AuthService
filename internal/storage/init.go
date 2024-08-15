@@ -2,6 +2,8 @@ package storage
 
 import "github.com/jackc/pgx/v5/pgxpool"
 
+//go:generate mockgen -source=init.go -destination=mocks/storage.go
+
 type logger interface {
 	Info(...any)
 	Infof(string, ...any)

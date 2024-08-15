@@ -7,6 +7,8 @@ import (
 	"net/smtp"
 )
 
+//go:generate mockgen -source=client.go -destination=mocks/client.go
+
 type logger interface {
 	Errorf(string, ...any)
 	Warnf(string, ...any)
@@ -36,7 +38,9 @@ func (s *service) SendEmailWarning(ip string) {
 		return
 	}
 	auth := smtp.PlainAuth("", s.config.User, s.config.Password, s.config.Host)
-
+	if len(s.config.Password) == 0 {
+		auth = nil
+	}
 	t, err := template.ParseFiles("templates/email.warning.html")
 	if err != nil {
 		s.logger.Errorf("can't find or parse html template: %s", err)

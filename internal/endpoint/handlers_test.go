@@ -134,11 +134,11 @@ func TestRefreshToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().ValidateUserToken("token", "127.0.0.1").Return(nil, middleware.BadRequestError("cant validate user token"))
+				m1.EXPECT().ValidateUserToken("token", "refresh", "127.0.0.1").Return(nil, middleware.BadRequestError("cant validate user token"))
 			},
 			ExceptedStatus: http.StatusBadRequest,
 			QueryToken:     "token",
-			QueryRefresh:   "",
+			QueryRefresh:   "refresh",
 			IpHeader:       "127.0.0.1",
 		},
 		{
@@ -146,12 +146,12 @@ func TestRefreshToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().ValidateUserToken("token", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
+				m1.EXPECT().ValidateUserToken("token", "refresh", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
 				m1.EXPECT().GenerateAccessToken("", "127.0.0.1").Return("", "", middleware.BadRequestError("wrong id provided"))
 			},
 			ExceptedStatus: http.StatusBadRequest,
 			QueryToken:     "token",
-			QueryRefresh:   "",
+			QueryRefresh:   "refresh",
 			IpHeader:       "127.0.0.1",
 		},
 		{
@@ -159,12 +159,12 @@ func TestRefreshToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().ValidateUserToken("token", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
+				m1.EXPECT().ValidateUserToken("token", "refresh", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
 				m1.EXPECT().GenerateAccessToken("", "127.0.0.1").Return("token", "refresh", nil)
 			},
 			ExceptedStatus: http.StatusOK,
 			QueryToken:     "token",
-			QueryRefresh:   "",
+			QueryRefresh:   "refresh",
 			IpHeader:       "127.0.0.1",
 			ExceptedBody:   "{\"token\":\"token\",\"refresh\":\"refresh\"}",
 		},

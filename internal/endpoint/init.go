@@ -9,7 +9,7 @@ import (
 
 type service interface {
 	GenerateAccessToken(string, string) (string, string, error)
-	ValidateUserToken(string, string) (*Service.Claims, error)
+	ValidateUserToken(string, string, string) (*Service.Claims, error)
 }
 type logger interface {
 	Info(...any)
