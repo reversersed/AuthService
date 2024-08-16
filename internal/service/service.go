@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -11,7 +12,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (s *service) GenerateAccessToken(guid string, ip string) (string, string, error) {
+func (s *service) GenerateAccessToken(ctx context.Context, guid string, ip string) (string, string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	builder := jwt.NewBuilder(s.signer)
 
 	s.logger.Infof("generating token for %s: %s", ip, guid)
@@ -38,13 +42,16 @@ func (s *service) GenerateAccessToken(guid string, ip string) (string, string, e
 	if err != nil {
 		return "", "", middleware.InternalError(err.Error())
 	}
-	if err := s.storage.CreateNewRefreshPassword(guid, cryptToken, claims.IssuedAt.Time); err != nil {
+	if err := s.storage.CreateNewRefreshPassword(ctx, guid, cryptToken, claims.IssuedAt.Time.UTC()); err != nil {
 		return "", "", err
 	}
 
 	return token.String(), refreshToken, nil
 }
-func (s *service) ValidateUserToken(token string, refresh string, ip string) (*Claims, error) {
+func (s *service) ValidateUserToken(ctx context.Context, token string, refresh string, ip string) (*Claims, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	claimToken, err := jwt.ParseAndVerifyString(token, s.verifier)
 	if err != nil {
 		return nil, middleware.BadRequestError("token not verified: %v", err)
@@ -55,15 +62,15 @@ func (s *service) ValidateUserToken(token string, refresh string, ip string) (*C
 		return nil, middleware.InternalError(err.Error())
 	}
 
-	rowId, hash, err := s.storage.GetFreeRefreshToken(claims.ID, claims.IssuedAt.Time)
+	rowId, hash, err := s.storage.GetFreeRefreshToken(ctx, claims.ID, claims.IssuedAt.Time.UTC())
 	if err != nil {
 		return nil, err
 	}
 	if err := bcrypt.CompareHashAndPassword(hash, []byte(refresh)); err != nil {
-		s.logger.Warnf("user %s(%s) tried to refresh token with incorrect refresh token", claims.ID, ip)
-		return nil, middleware.ConfictError("refresh token is incorrect")
+		s.logger.Warnf("user %s(%s) tried to refresh token with incorrect refresh token: %v (%v)", claims.ID, ip, refresh, hash)
+		return nil, middleware.NotFoundError("refresh token is incorrect")
 	}
-	if err := s.storage.RevokeRefreshToken(rowId); err != nil {
+	if err := s.storage.RevokeRefreshToken(ctx, rowId); err != nil {
 		return nil, err
 	}
 	if claims.LastIP != ip {

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator"
+	"github.com/google/uuid"
 	"github.com/reversersed/AuthService/pkg/middleware"
 )
 
@@ -24,6 +25,7 @@ func New() *Validator {
 		}
 		return name
 	})
+	v.RegisterValidation("uuid", UuidValidation)
 	return &Validator{v}
 }
 func (v *Validator) StructValidation(data any) error {
@@ -44,7 +46,16 @@ func errorToStringByTag(err validator.FieldError) string {
 	switch err.Tag() {
 	case "required":
 		return fmt.Sprintf("%s: field is required", err.Field())
+	case "uuid":
+		return fmt.Sprintf("%s: field must be a valid uuid", err.Field())
 	default:
 		return err.Tag()
 	}
+}
+func UuidValidation(fl validator.FieldLevel) bool {
+	if len(fl.Field().String()) == 0 {
+		return true
+	}
+	_, err := uuid.Parse(fl.Field().String())
+	return err == nil
 }

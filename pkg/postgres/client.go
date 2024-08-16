@@ -60,17 +60,18 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 
 	logger.Info("starting up migration...")
 	err = migrate.Up()
-	if err != nil {
+	if err != nil && err.Error() != "no change" {
 		return nil, err
+	}
+
+	version, dirty, err := migrate.Version()
+	if err != nil {
+		return nil, fmt.Errorf("no migrations were applied: %v", err)
 	}
 
 	source, err := migrate.Close()
 	if source != nil || err != nil {
 		return nil, fmt.Errorf("source: %v, database: %v", source, err)
-	}
-	version, dirty, err := migrate.Version()
-	if err != nil {
-		return nil, fmt.Errorf("no migrations were applied: %v", err)
 	}
 	logger.Infof("migrations done, current version: %d, database dirty: %v", version, dirty)
 	return pool, nil

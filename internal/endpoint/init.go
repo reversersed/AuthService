@@ -1,6 +1,8 @@
 package endpoint
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	Service "github.com/reversersed/AuthService/internal/service"
 )
@@ -8,8 +10,8 @@ import (
 //go:generate mockgen -source=init.go -destination=mocks/mock.go
 
 type service interface {
-	GenerateAccessToken(string, string) (string, string, error)
-	ValidateUserToken(string, string, string) (*Service.Claims, error)
+	GenerateAccessToken(context.Context, string, string) (string, string, error)
+	ValidateUserToken(context.Context, string, string, string) (*Service.Claims, error)
 }
 type logger interface {
 	Info(...any)

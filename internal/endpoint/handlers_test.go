@@ -46,7 +46,7 @@ func TestGetAccessToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().GenerateAccessToken("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "127.0.0.1").Return("", "", middleware.NotFoundError("id not found"))
+				m1.EXPECT().GenerateAccessToken(gomock.Any(), "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "127.0.0.1").Return("", "", middleware.NotFoundError("id not found"))
 			},
 			ExceptedStatus: http.StatusNotFound,
 			QueryId:        "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
@@ -57,7 +57,7 @@ func TestGetAccessToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().GenerateAccessToken("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "127.0.0.1").Return("token", "refresh", nil)
+				m1.EXPECT().GenerateAccessToken(gomock.Any(), "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", "127.0.0.1").Return("token", "refresh", nil)
 			},
 			QueryId:        "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
 			IpHeader:       "127.0.0.1",
@@ -134,7 +134,7 @@ func TestRefreshToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().ValidateUserToken("token", "refresh", "127.0.0.1").Return(nil, middleware.BadRequestError("cant validate user token"))
+				m1.EXPECT().ValidateUserToken(gomock.Any(), "token", "refresh", "127.0.0.1").Return(nil, middleware.BadRequestError("cant validate user token"))
 			},
 			ExceptedStatus: http.StatusBadRequest,
 			QueryToken:     "token",
@@ -146,8 +146,8 @@ func TestRefreshToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().ValidateUserToken("token", "refresh", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
-				m1.EXPECT().GenerateAccessToken("", "127.0.0.1").Return("", "", middleware.BadRequestError("wrong id provided"))
+				m1.EXPECT().ValidateUserToken(gomock.Any(), "token", "refresh", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
+				m1.EXPECT().GenerateAccessToken(gomock.Any(), "", "127.0.0.1").Return("", "", middleware.BadRequestError("wrong id provided"))
 			},
 			ExceptedStatus: http.StatusBadRequest,
 			QueryToken:     "token",
@@ -159,8 +159,8 @@ func TestRefreshToken(t *testing.T) {
 			MockBehaviour: func(m1 *mock_endpoint.Mockservice, m2 *mock_endpoint.Mocklogger, m3 *mock_endpoint.Mockvalidator) {
 				m2.EXPECT().Info(gomock.Any()).AnyTimes()
 				m3.EXPECT().StructValidation(gomock.Any()).Return(nil)
-				m1.EXPECT().ValidateUserToken("token", "refresh", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
-				m1.EXPECT().GenerateAccessToken("", "127.0.0.1").Return("token", "refresh", nil)
+				m1.EXPECT().ValidateUserToken(gomock.Any(), "token", "refresh", "127.0.0.1").Return(&Service.Claims{LastIP: "127.0.0.1"}, nil)
+				m1.EXPECT().GenerateAccessToken(gomock.Any(), "", "127.0.0.1").Return("token", "refresh", nil)
 			},
 			ExceptedStatus: http.StatusOK,
 			QueryToken:     "token",

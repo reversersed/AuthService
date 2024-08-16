@@ -5,6 +5,7 @@
 package mock_service
 
 import (
+	context "context"
 	reflect "reflect"
 	time "time"
 
@@ -108,23 +109,23 @@ func (m *Mockstorage) EXPECT() *MockstorageMockRecorder {
 }
 
 // CreateNewRefreshPassword mocks base method.
-func (m *Mockstorage) CreateNewRefreshPassword(arg0 string, arg1 []byte, arg2 time.Time) error {
+func (m *Mockstorage) CreateNewRefreshPassword(arg0 context.Context, arg1 string, arg2 []byte, arg3 time.Time) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNewRefreshPassword", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "CreateNewRefreshPassword", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateNewRefreshPassword indicates an expected call of CreateNewRefreshPassword.
-func (mr *MockstorageMockRecorder) CreateNewRefreshPassword(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockstorageMockRecorder) CreateNewRefreshPassword(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewRefreshPassword", reflect.TypeOf((*Mockstorage)(nil).CreateNewRefreshPassword), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewRefreshPassword", reflect.TypeOf((*Mockstorage)(nil).CreateNewRefreshPassword), arg0, arg1, arg2, arg3)
 }
 
 // GetFreeRefreshToken mocks base method.
-func (m *Mockstorage) GetFreeRefreshToken(arg0 string, arg1 time.Time) (string, []byte, error) {
+func (m *Mockstorage) GetFreeRefreshToken(arg0 context.Context, arg1 string, arg2 time.Time) (string, []byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFreeRefreshToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetFreeRefreshToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].([]byte)
 	ret2, _ := ret[2].(error)
@@ -132,23 +133,23 @@ func (m *Mockstorage) GetFreeRefreshToken(arg0 string, arg1 time.Time) (string, 
 }
 
 // GetFreeRefreshToken indicates an expected call of GetFreeRefreshToken.
-func (mr *MockstorageMockRecorder) GetFreeRefreshToken(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockstorageMockRecorder) GetFreeRefreshToken(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFreeRefreshToken", reflect.TypeOf((*Mockstorage)(nil).GetFreeRefreshToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFreeRefreshToken", reflect.TypeOf((*Mockstorage)(nil).GetFreeRefreshToken), arg0, arg1, arg2)
 }
 
 // RevokeRefreshToken mocks base method.
-func (m *Mockstorage) RevokeRefreshToken(arg0 string) error {
+func (m *Mockstorage) RevokeRefreshToken(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RevokeRefreshToken", arg0)
+	ret := m.ctrl.Call(m, "RevokeRefreshToken", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RevokeRefreshToken indicates an expected call of RevokeRefreshToken.
-func (mr *MockstorageMockRecorder) RevokeRefreshToken(arg0 interface{}) *gomock.Call {
+func (mr *MockstorageMockRecorder) RevokeRefreshToken(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeRefreshToken", reflect.TypeOf((*Mockstorage)(nil).RevokeRefreshToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeRefreshToken", reflect.TypeOf((*Mockstorage)(nil).RevokeRefreshToken), arg0, arg1)
 }
 
 // MockemailService is a mock of emailService interface.

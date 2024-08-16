@@ -5,6 +5,7 @@
 package mock_endpoint
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,9 +36,9 @@ func (m *Mockservice) EXPECT() *MockserviceMockRecorder {
 }
 
 // GenerateAccessToken mocks base method.
-func (m *Mockservice) GenerateAccessToken(arg0, arg1 string) (string, string, error) {
+func (m *Mockservice) GenerateAccessToken(arg0 context.Context, arg1, arg2 string) (string, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateAccessToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "GenerateAccessToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -45,24 +46,24 @@ func (m *Mockservice) GenerateAccessToken(arg0, arg1 string) (string, string, er
 }
 
 // GenerateAccessToken indicates an expected call of GenerateAccessToken.
-func (mr *MockserviceMockRecorder) GenerateAccessToken(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockserviceMockRecorder) GenerateAccessToken(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAccessToken", reflect.TypeOf((*Mockservice)(nil).GenerateAccessToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateAccessToken", reflect.TypeOf((*Mockservice)(nil).GenerateAccessToken), arg0, arg1, arg2)
 }
 
 // ValidateUserToken mocks base method.
-func (m *Mockservice) ValidateUserToken(arg0, arg1, arg2 string) (*service.Claims, error) {
+func (m *Mockservice) ValidateUserToken(arg0 context.Context, arg1, arg2, arg3 string) (*service.Claims, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateUserToken", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "ValidateUserToken", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*service.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateUserToken indicates an expected call of ValidateUserToken.
-func (mr *MockserviceMockRecorder) ValidateUserToken(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockserviceMockRecorder) ValidateUserToken(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateUserToken", reflect.TypeOf((*Mockservice)(nil).ValidateUserToken), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateUserToken", reflect.TypeOf((*Mockservice)(nil).ValidateUserToken), arg0, arg1, arg2, arg3)
 }
 
 // Mocklogger is a mock of logger interface.

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/cristalhq/jwt/v3"
@@ -14,9 +15,9 @@ type logger interface {
 	Infof(string, ...any)
 }
 type storage interface {
-	CreateNewRefreshPassword(string, []byte, time.Time) error
-	GetFreeRefreshToken(string, time.Time) (string, []byte, error)
-	RevokeRefreshToken(string) error
+	CreateNewRefreshPassword(context.Context, string, []byte, time.Time) error
+	GetFreeRefreshToken(context.Context, string, time.Time) (string, []byte, error)
+	RevokeRefreshToken(context.Context, string) error
 }
 type emailService interface {
 	SendEmailWarning(ip string)

@@ -1,7 +1,9 @@
 package endpoint
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/reversersed/AuthService/pkg/middleware"
@@ -16,6 +18,9 @@ import (
 // @Failure 500 {object} middleware.customError "Internal error occured"
 // @Router /v1/token [post]
 func (e *endpoint) GetAccessToken(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
 	var request GetTokenRequest
 	if err := c.BindJSON(&request); err != nil {
 		c.Error(middleware.BadRequestError(err.Error()))
@@ -31,7 +36,7 @@ func (e *endpoint) GetAccessToken(c *gin.Context) {
 		ip = c.RemoteIP()
 	}
 
-	token, refresh, err := e.service.GenerateAccessToken(request.Guid, ip)
+	token, refresh, err := e.service.GenerateAccessToken(ctx, request.Guid, ip)
 	if err != nil {
 		c.Error(err)
 		return
@@ -49,6 +54,9 @@ func (e *endpoint) GetAccessToken(c *gin.Context) {
 // @Failure 500 {object} middleware.customError "Internal error occured"
 // @Router /v1/token/refresh [post]
 func (e *endpoint) RefreshToken(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
 	var request RefreshTokenRequest
 	if err := c.BindJSON(&request); err != nil {
 		c.Error(middleware.BadRequestError(err.Error()))
@@ -63,12 +71,12 @@ func (e *endpoint) RefreshToken(c *gin.Context) {
 	if ip = c.ClientIP(); len(ip) == 0 {
 		ip = c.RemoteIP()
 	}
-	claims, err := e.service.ValidateUserToken(request.Token, request.Refresh, ip)
+	claims, err := e.service.ValidateUserToken(ctx, request.Token, request.Refresh, ip)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	token, refresh, err := e.service.GenerateAccessToken(claims.ID, claims.LastIP)
+	token, refresh, err := e.service.GenerateAccessToken(ctx, claims.ID, claims.LastIP)
 	if err != nil {
 		c.Error(err)
 		return
