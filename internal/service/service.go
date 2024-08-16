@@ -67,7 +67,7 @@ func (s *service) ValidateUserToken(ctx context.Context, token string, refresh s
 		return nil, err
 	}
 	if err := bcrypt.CompareHashAndPassword(hash, []byte(refresh)); err != nil {
-		s.logger.Warnf("user %s(%s) tried to refresh token with incorrect refresh token: %v (%v)", claims.ID, ip, refresh, hash)
+		s.logger.Warnf("user %s(%s) tried to refresh token with incorrect refresh token: %v (%v)", claims.ID, ip, refresh, string(hash))
 		return nil, middleware.NotFoundError("refresh token is incorrect")
 	}
 	if err := s.storage.RevokeRefreshToken(ctx, rowId); err != nil {

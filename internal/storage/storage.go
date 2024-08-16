@@ -18,7 +18,7 @@ func (s *storage) CreateNewRefreshPassword(ctx context.Context, uuid string, ref
 		tx.Rollback(ctx)
 		return middleware.InternalError(err.Error())
 	}
-	tag, err := tx.Exec(ctx, "INSERT INTO sessions (clientid,refreshtoken,created) VALUES ($1,$2,$3)", uuid, string(refreshpassword), creation)
+	tag, err := tx.Exec(ctx, "INSERT INTO sessions (clientid,refreshtoken,created) VALUES ($1,$2,$3)", uuid, string(refreshpassword), creation.Format("2006-01-02 15:04:05.000000000"))
 	if err != nil {
 		tx.Rollback(ctx)
 		s.logger.Warnf("can't execute query: %v", err)
@@ -44,7 +44,7 @@ func (s *storage) GetFreeRefreshToken(ctx context.Context, id string, createdTim
 	}{}
 
 	s.logger.Infof("searching token for client %s with time %v", id, createdTime)
-	err = tx.QueryRow(ctx, "SELECT id,refreshtoken FROM sessions WHERE clientid = $1 AND created = $2 AND refreshed IS NULL LIMIT 1", id, createdTime).Scan(&model.id, &model.refreshtoken)
+	err = tx.QueryRow(ctx, "SELECT id,refreshtoken FROM sessions WHERE clientid = $1 AND created = $2 AND refreshed IS NULL LIMIT 1", id, createdTime.Format("2006-01-02 15:04:05.000000000")).Scan(&model.id, &model.refreshtoken)
 	if err == pgx.ErrNoRows {
 		tx.Rollback(ctx)
 		s.logger.Warnf("can't find token for client %s with timestamp %v", id, createdTime)
