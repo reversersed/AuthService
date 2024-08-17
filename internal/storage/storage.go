@@ -18,7 +18,7 @@ func (s *storage) CreateNewRefreshPassword(ctx context.Context, uuid string, ref
 		tx.Rollback(ctx)
 		return middleware.InternalError(err.Error())
 	}
-	tag, err := tx.Exec(ctx, "INSERT INTO sessions (clientid,refreshtoken,created) VALUES ($1,$2,$3)", uuid, string(refreshpassword), creation.Format("2006-01-02 15:04:05.000000000"))
+	tag, err := tx.Exec(ctx, "INSERT INTO sessions (clientid,refreshtoken,created) VALUES ($1,$2,$3)", uuid, string(refreshpassword), creation.Format("2006-01-02 15:04:05.0000"))
 	if err != nil {
 		tx.Rollback(ctx)
 		s.logger.Warnf("can't execute query: %v", err)
@@ -43,11 +43,11 @@ func (s *storage) GetFreeRefreshToken(ctx context.Context, id string, createdTim
 		refreshtoken string
 	}{}
 
-	s.logger.Infof("searching token for client %s with time %v", id, createdTime)
-	err = tx.QueryRow(ctx, "SELECT id,refreshtoken FROM sessions WHERE clientid = $1 AND created = $2 AND refreshed IS NULL LIMIT 1", id, createdTime.Format("2006-01-02 15:04:05.000000000")).Scan(&model.id, &model.refreshtoken)
+	s.logger.Infof("searching token for client %s with time %v", id, createdTime.Format("2006-01-02 15:04:05.0000"))
+	err = tx.QueryRow(ctx, "SELECT id,refreshtoken FROM sessions WHERE clientid = $1 AND created = $2 AND refreshed IS NULL LIMIT 1", id, createdTime.Format("2006-01-02 15:04:05.0000")).Scan(&model.id, &model.refreshtoken)
 	if err == pgx.ErrNoRows {
 		tx.Rollback(ctx)
-		s.logger.Warnf("can't find token for client %s with timestamp %v", id, createdTime)
+		s.logger.Warnf("can't find token for client %s with timestamp %v", id, createdTime.Format("2006-01-02 15:04:05.0000"))
 		return "", nil, middleware.NotFoundError("no token found: %v", err)
 	} else if err != nil {
 		tx.Rollback(ctx)
@@ -64,5 +64,19 @@ func (s *storage) RevokeRefreshToken(ctx context.Context, rowId string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		s.logger.Warnf("can't begin connection from pool: %v", err)
+		tx.Rollback(ctx)
+		return middleware.InternalError(err.Error())
+	}
+
+	tag, err := tx.Exec(ctx, "UPDATE sessions SET refreshed = $1 WHERE id = $2 LIMIT 1", time.Now().UTC().Format("2006-01-02 15:04:05.0000"), rowId)
+	if err != nil {
+		tx.Rollback(ctx)
+		s.logger.Warnf("can't execute query: %v", err)
+		return middleware.InternalError(err.Error())
+	}
+	s.logger.Infof("query %s was successful, refresh token has been revoked for row %s", tag.String(), rowId)
 	return nil
 }
