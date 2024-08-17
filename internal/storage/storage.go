@@ -25,7 +25,10 @@ func (s *storage) CreateNewRefreshPassword(ctx context.Context, uuid string, ref
 		return middleware.InternalError(err.Error())
 	}
 	s.logger.Infof("query %s was successful", tag.String())
-	tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		tx.Rollback(ctx)
+		return middleware.InternalError(err.Error())
+	}
 	return nil
 }
 func (s *storage) GetFreeRefreshToken(ctx context.Context, id string, createdTime uint64) (string, []byte, error) {
@@ -78,5 +81,10 @@ func (s *storage) RevokeRefreshToken(ctx context.Context, rowId string) error {
 		return middleware.InternalError(err.Error())
 	}
 	s.logger.Infof("query %s was successful, refresh token has been revoked for row %s", tag.String(), rowId)
+
+	if err := tx.Commit(ctx); err != nil {
+		tx.Rollback(ctx)
+		return middleware.InternalError(err.Error())
+	}
 	return nil
 }
