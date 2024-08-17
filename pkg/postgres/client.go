@@ -15,6 +15,8 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 )
 
+//go:generate mockgen -source=client.go -destination=mocks/client.go
+
 type logger interface {
 	Info(...any)
 	Infof(string, ...any)
@@ -41,9 +43,13 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 		rand.Read(byteToken)
 		trace := base64.StdEncoding.EncodeToString(byteToken)
 
-		logger.Info("database establishing new connection... trace: ", trace)
+		if logger != nil {
+			logger.Info("database establishing new connection... trace: ", trace)
+		}
 		<-c.PgConn().CleanupDone()
-		logger.Info("database connection cleaned up, trace: ", trace)
+		if logger != nil {
+			logger.Info("database connection cleaned up, trace: ", trace)
+		}
 		return nil
 	}
 	err = pool.Ping(context.Background())
@@ -51,7 +57,9 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 		return nil, err
 	}
 
-	logger.Info("retrieving db from pool to migrate...")
+	if logger != nil {
+		logger.Info("retrieving db from pool to migrate...")
+	}
 	instance, err := postgres.WithInstance(stdlib.OpenDBFromPool(pool), &postgres.Config{DatabaseName: cfg.Database})
 	if err != nil {
 		return nil, err
@@ -77,6 +85,8 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 	if source != nil || err != nil {
 		return nil, fmt.Errorf("source: %v, database: %v", source, err)
 	}
-	logger.Infof("migrations done, current version: %d, database dirty: %v", version, dirty)
+	if logger != nil {
+		logger.Infof("migrations done, current version: %d, database dirty: %v", version, dirty)
+	}
 	return pool, nil
 }
