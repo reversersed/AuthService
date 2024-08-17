@@ -71,7 +71,7 @@ func (s *storage) RevokeRefreshToken(ctx context.Context, rowId string) error {
 		return middleware.InternalError(err.Error())
 	}
 
-	tag, err := tx.Exec(ctx, "UPDATE sessions SET refreshed = $1 WHERE id = $2 LIMIT 1", time.Now().UTC().Format("2006-01-02 15:04:05.0000"), rowId)
+	tag, err := tx.Exec(ctx, "UPDATE sessions SET refreshed = $1 WHERE id = $2", time.Now().UTC().Format("2006-01-02 15:04:05.0000"), rowId)
 	if err != nil {
 		tx.Rollback(ctx)
 		s.logger.Warnf("can't execute query: %v", err)

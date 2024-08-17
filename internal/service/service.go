@@ -70,6 +70,7 @@ func (s *service) ValidateUserToken(ctx context.Context, token string, refresh s
 		s.logger.Warnf("user %s(%s) tried to refresh token with incorrect refresh token: %v (%v)", claims.ID, ip, refresh, string(hash))
 		return nil, middleware.NotFoundError("refresh token is incorrect")
 	}
+	s.logger.Info("token found and validated... revoking...")
 	if err := s.storage.RevokeRefreshToken(ctx, rowId); err != nil {
 		return nil, err
 	}
