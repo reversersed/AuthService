@@ -24,9 +24,9 @@ func (s *service) GenerateAccessToken(ctx context.Context, guid string, ip strin
 			ID:        guid,
 			Audience:  []string{guid, ip},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)), // 1 hour live
-			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
-		LastIP: ip,
+		LastIP:  ip,
+		Created: uint64(time.Now().UTC().UnixMilli()),
 	}
 	token, err := builder.Build(claims)
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *service) GenerateAccessToken(ctx context.Context, guid string, ip strin
 	if err != nil {
 		return "", "", middleware.InternalError(err.Error())
 	}
-	if err := s.storage.CreateNewRefreshPassword(ctx, guid, cryptToken, claims.IssuedAt.Time.UTC()); err != nil {
+	if err := s.storage.CreateNewRefreshPassword(ctx, guid, cryptToken, claims.Created); err != nil {
 		return "", "", err
 	}
 
@@ -62,7 +62,7 @@ func (s *service) ValidateUserToken(ctx context.Context, token string, refresh s
 		return nil, middleware.InternalError(err.Error())
 	}
 
-	rowId, hash, err := s.storage.GetFreeRefreshToken(ctx, claims.ID, claims.IssuedAt.Time.UTC())
+	rowId, hash, err := s.storage.GetFreeRefreshToken(ctx, claims.ID, claims.Created)
 	if err != nil {
 		return nil, err
 	}

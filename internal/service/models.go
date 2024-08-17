@@ -6,5 +6,6 @@ import (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	LastIP string
+	LastIP  string
+	Created uint64
 }
