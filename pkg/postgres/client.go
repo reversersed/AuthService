@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -32,6 +33,9 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 	if err != nil {
 		return nil, err
 	}
+	pool.Config().MaxConnLifetime = 1 * time.Hour
+	pool.Config().MaxConnIdleTime = 30 * time.Minute
+	pool.Config().MaxConns = 100
 	pool.Config().AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
 		byteToken := make([]byte, 24)
 		rand.Read(byteToken)

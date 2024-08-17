@@ -34,10 +34,7 @@ func New(logger logger, storage storage, emailService emailService, secret strin
 	if err != nil {
 		return nil, err
 	}
-	verifier, err := jwt.NewVerifierHS(jwt.HS512, []byte(secret))
-	if err != nil {
-		return nil, err
-	}
+	verifier, _ := jwt.NewVerifierHS(jwt.HS512, []byte(secret))
 	return &service{
 		logger:       logger,
 		signer:       signer,

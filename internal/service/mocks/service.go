@@ -7,7 +7,6 @@ package mock_service
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -109,7 +108,7 @@ func (m *Mockstorage) EXPECT() *MockstorageMockRecorder {
 }
 
 // CreateNewRefreshPassword mocks base method.
-func (m *Mockstorage) CreateNewRefreshPassword(arg0 context.Context, arg1 string, arg2 []byte, arg3 time.Time) error {
+func (m *Mockstorage) CreateNewRefreshPassword(arg0 context.Context, arg1 string, arg2 []byte, arg3 uint64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNewRefreshPassword", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
@@ -123,7 +122,7 @@ func (mr *MockstorageMockRecorder) CreateNewRefreshPassword(arg0, arg1, arg2, ar
 }
 
 // GetFreeRefreshToken mocks base method.
-func (m *Mockstorage) GetFreeRefreshToken(arg0 context.Context, arg1 string, arg2 time.Time) (string, []byte, error) {
+func (m *Mockstorage) GetFreeRefreshToken(arg0 context.Context, arg1 string, arg2 uint64) (string, []byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFreeRefreshToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
