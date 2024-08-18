@@ -22,11 +22,12 @@ type logger interface {
 	Infof(string, ...any)
 }
 type DatabaseConfig struct {
-	Host     string `env:"POSTGRES_HOST" env-required:"true" env-description:"Postgres hosting address"`
-	Port     int    `env:"POSTGRES_PORT" env-required:"true" env-description:"Portgres hosting port"`
-	User     string `env:"POSTGRES_USER" env-required:"true" env-description:"Postgres username"`
-	Password string `env:"POSTGRES_PASSWORD" env-required:"true" env-description:"Postres user password to connect"`
-	Database string `env:"POSTGRES_DB" env-required:"true" env-description:"Database name"`
+	Host          string `env:"POSTGRES_HOST" env-required:"true" env-description:"Postgres hosting address"`
+	Port          int    `env:"POSTGRES_PORT" env-required:"true" env-description:"Portgres hosting port"`
+	User          string `env:"POSTGRES_USER" env-required:"true" env-description:"Postgres username"`
+	Password      string `env:"POSTGRES_PASSWORD" env-required:"true" env-description:"Postres user password to connect"`
+	Database      string `env:"POSTGRES_DB" env-required:"true" env-description:"Database name"`
+	MigrationPath string `env:"POSTGRES_MIGRATIONS_PATH" env-description:"Path to migrations folder" env-default:"/migrations"`
 }
 
 func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error) {
@@ -64,13 +65,15 @@ func NewConnectionPool(cfg *DatabaseConfig, logger logger) (*pgxpool.Pool, error
 	if err != nil {
 		return nil, err
 	}
-
-	migrate, err := migrate.NewWithDatabaseInstance("file:///migrations", cfg.Database, instance)
+	defer instance.Close()
+	migrate, err := migrate.NewWithDatabaseInstance(fmt.Sprintf("file://%s", cfg.MigrationPath), cfg.Database, instance)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error opening migrations: %v", err)
 	}
 
-	logger.Info("starting up migration...")
+	if logger != nil {
+		logger.Info("starting up migration...")
+	}
 	err = migrate.Up()
 	if err != nil && err.Error() != "no change" {
 		return nil, err

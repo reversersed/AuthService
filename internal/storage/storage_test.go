@@ -33,13 +33,14 @@ func TestMain(m *testing.M) {
 		pgContainer.WithDatabase("testbase"),
 		pgContainer.WithUsername("testuser"),
 		pgContainer.WithPassword("testpassword"),
+		pgContainer.BasicWaitStrategies(),
 	)
 	if err != nil {
 		log.Fatalf("can't run the container: %v", err)
 		return
 	}
 
-	host, err := container.ContainerIP(ctx)
+	host, err := container.Host(ctx)
 	if err != nil {
 		log.Fatalf("can't get container IP: %v", err)
 		return
@@ -51,11 +52,12 @@ func TestMain(m *testing.M) {
 	}
 
 	cfg := &postgres.DatabaseConfig{
-		Host:     host,
-		Port:     port.Int(),
-		User:     "testuser",
-		Password: "testpassword",
-		Database: "testbase",
+		Host:          host,
+		Port:          port.Int(),
+		User:          "testuser",
+		Password:      "testpassword",
+		Database:      "testbase",
+		MigrationPath: "../../migrations",
 	}
 	pool, err = postgres.NewConnectionPool(cfg, nil)
 	if err != nil {
@@ -80,7 +82,10 @@ func TestDefaultRoute(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	logger := mock_storage.NewMocklogger(ctrl)
-	logger.EXPECT().Info(gomock.Any())
+	logger.EXPECT().Info(gomock.Any()).AnyTimes()
+	logger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+	logger.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	logger.EXPECT().Warnf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	storage := New(pool, logger)
 
 	var (
@@ -89,7 +94,8 @@ func TestDefaultRoute(t *testing.T) {
 		created = uint64(time.Now().UTC().UnixMilli())
 	)
 
-	err := storage.CreateNewRefreshPassword(ctx, userId, refresh, created)
+	refreshCrypt, _ := bcrypt.GenerateFromPassword(refresh, bcrypt.DefaultCost)
+	err := storage.CreateNewRefreshPassword(ctx, userId, refreshCrypt, created)
 	assert.NoError(t, err)
 
 	row, hash, err := storage.GetFreeRefreshToken(ctx, userId, created)
@@ -103,6 +109,6 @@ func TestDefaultRoute(t *testing.T) {
 
 	_, _, err = storage.GetFreeRefreshToken(ctx, userId, created)
 	if assert.Error(t, err) {
-		assert.EqualError(t, err, middleware.NotFoundError("no token found: no rows found").Error())
+		assert.EqualError(t, err, middleware.NotFoundError("no token found: no rows in result set").Error())
 	}
 }

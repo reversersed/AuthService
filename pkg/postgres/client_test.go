@@ -28,13 +28,14 @@ func TestMain(m *testing.M) {
 		postgres.WithDatabase("testbase"),
 		postgres.WithUsername("testuser"),
 		postgres.WithPassword("testpassword"),
+		postgres.BasicWaitStrategies(),
 	)
 	if err != nil {
 		log.Fatalf("can't run the container: %v", err)
 		return
 	}
 
-	host, err := container.ContainerIP(ctx)
+	host, err := container.Host(ctx)
 	if err != nil {
 		log.Fatalf("can't get container IP: %v", err)
 		return
@@ -46,11 +47,12 @@ func TestMain(m *testing.M) {
 	}
 
 	cfg = &DatabaseConfig{
-		Host:     host,
-		Port:     port.Int(),
-		User:     "testuser",
-		Password: "testpassword",
-		Database: "testbase",
+		Host:          host,
+		Port:          port.Int(),
+		User:          "testuser",
+		Password:      "testpassword",
+		Database:      "testbase",
+		MigrationPath: "../../migrations",
 	}
 	code := m.Run()
 
@@ -70,26 +72,48 @@ func TestNewPoolSuccess(t *testing.T) {
 	logger.EXPECT().Info(gomock.Any()).AnyTimes()
 	logger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
 	pool, err := NewConnectionPool(cfg, logger)
-	assert.NoError(t, err)
-	assert.NotNil(t, pool)
+	if assert.NoError(t, err) {
+		assert.NotNil(t, pool)
+	}
 }
 func TestNewPoolWithWrongCredentials(t *testing.T) {
 	if !assert.NotNil(t, cfg) {
 		return
 	}
-	cfg := *cfg
-	cfg.Password = "wrongpassword"
-	ctrl := gomock.NewController(t)
-	logger := mock_postgres.NewMocklogger(ctrl)
-	logger.EXPECT().Info(gomock.Any()).AnyTimes()
-	logger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
 
-	_, err := NewConnectionPool(&cfg, logger)
-	assert.Error(t, err)
+	t.Run("wrong password", func(t *testing.T) {
+		cfg := *cfg
+		cfg.Password = "wrongpassword"
+		ctrl := gomock.NewController(t)
+		logger := mock_postgres.NewMocklogger(ctrl)
+		logger.EXPECT().Info(gomock.Any()).AnyTimes()
+		logger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
 
-	cfg.Password = "testpassword"
-	cfg.User = "notexistinguser"
+		_, err := NewConnectionPool(&cfg, logger)
+		assert.Error(t, err)
+	})
+	t.Run("wrong username", func(t *testing.T) {
+		cfg := *cfg
+		ctrl := gomock.NewController(t)
+		logger := mock_postgres.NewMocklogger(ctrl)
+		logger.EXPECT().Info(gomock.Any()).AnyTimes()
+		logger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
 
-	_, err = NewConnectionPool(&cfg, logger)
-	assert.Error(t, err)
+		cfg.User = "notexistinguser"
+
+		_, err := NewConnectionPool(&cfg, logger)
+		assert.Error(t, err)
+	})
+	t.Run("wrong migrations path", func(t *testing.T) {
+		cfg := *cfg
+		ctrl := gomock.NewController(t)
+		logger := mock_postgres.NewMocklogger(ctrl)
+		logger.EXPECT().Info(gomock.Any()).AnyTimes()
+		logger.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+
+		cfg.MigrationPath = "/noFolderForMigrations"
+
+		_, err := NewConnectionPool(&cfg, logger)
+		assert.Error(t, err)
+	})
 }

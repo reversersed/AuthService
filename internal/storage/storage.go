@@ -80,6 +80,9 @@ func (s *storage) RevokeRefreshToken(ctx context.Context, rowId string) error {
 		s.logger.Warnf("can't execute query: %v", err)
 		return middleware.InternalError(err.Error())
 	}
+	if tag.RowsAffected() == 0 {
+		return middleware.InternalError("no rows was found to update token. searching id: %v", rowId)
+	}
 	s.logger.Infof("query %s was successful, refresh token has been revoked for row %s", tag.String(), rowId)
 
 	if err := tx.Commit(ctx); err != nil {

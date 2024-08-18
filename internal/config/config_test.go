@@ -39,11 +39,12 @@ POSTGRES_DB = base`)
 	if assert.NotNil(t, cfg) {
 		excepted := &Config{
 			Database: &postgres.DatabaseConfig{
-				Host:     "db",
-				Port:     1000,
-				Password: "dbpass",
-				User:     "root",
-				Database: "base",
+				Host:          "db",
+				Port:          1000,
+				Password:      "dbpass",
+				User:          "root",
+				Database:      "base",
+				MigrationPath: "/migrations",
 			},
 			Server: &ServerConfig{
 				Environment: "debug",
